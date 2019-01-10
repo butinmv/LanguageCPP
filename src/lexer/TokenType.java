@@ -14,12 +14,9 @@ public enum TokenType {
     MINUS,
     MULTIPLY,
     DIVIDE,
+    MODULUS,
 
     ASSIGN,
-    MULT_ASSIGN,
-    DIV_ASSIGN,
-    MIN_ASSIGN,
-    PLUS_ASSIGN,
 
     MORE,
     MORE_EQUAL,
@@ -47,6 +44,7 @@ public enum TokenType {
     SWITCH,
     CASE,
     DEFAULT,
+    VOID,
 
     ERROR,
     EOF

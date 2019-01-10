@@ -19,7 +19,6 @@ public class MainLexer {
         System.out.println(str);
         */
 
-
         Lexer lexer = new Lexer(code);
         Token token;
         try {

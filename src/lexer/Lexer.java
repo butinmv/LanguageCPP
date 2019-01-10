@@ -8,14 +8,15 @@ public class Lexer {
     private int numberSymbol;
 
     private int oldNumberRow;
-    private int oldNUmberCol;
-    private int oldnumberSymbol;
+    private int oldNumberCol;
+    private int oldNumberSymbol;
 
-    private String tokenMathSymbols = "+-/*(){}";
+    private String tokenMathSymbols = "+-/%*(){}";
     private TokenType[] tokenMathMass = {
             TokenType.PLUS,
             TokenType.MINUS,
             TokenType.DIVIDE,
+            TokenType.MODULUS,
             TokenType.MULTIPLY,
             TokenType.BRACKET_OPEN,
             TokenType.BRACKET_CLOSE,
@@ -82,6 +83,8 @@ public class Lexer {
             return new Token(str, TokenType.INT);
         if (str.equals("bool"))
             return new Token(str, TokenType.BOOL);
+        if (str.equals("void"))
+            return new Token(str, TokenType.VOID);
         if (str.equals("TRUE") || str.equals("true"))
             return new Token(str, TokenType.TRUE);
         if (str.equals("FALSE") || str.equals("false"))
@@ -241,5 +244,25 @@ public class Lexer {
 
     private Token lexerError(String s) {
         return new Token(s + " row " + numberRow + " col " + numberCol + " ", TokenType.ERROR);
+    }
+
+    public int getNumberRow() {
+        return numberRow;
+    }
+
+    public int getNumberCol() {
+        return numberCol;
+    }
+
+    public void save() {
+        oldNumberCol = numberCol;
+        oldNumberRow = numberRow;
+        oldNumberSymbol = numberSymbol;
+    }
+
+    public void ret() {
+        numberCol = oldNumberCol;
+        numberRow = oldNumberRow;
+        numberSymbol = oldNumberSymbol;
     }
 }
