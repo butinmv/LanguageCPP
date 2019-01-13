@@ -37,7 +37,6 @@ public enum TokenType {
     COMMA,
     COLON,
 
-    MAIN,
     INT,
     BOOL,
     RETURN,

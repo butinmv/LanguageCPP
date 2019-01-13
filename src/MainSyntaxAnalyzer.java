@@ -15,6 +15,6 @@ public class MainSyntaxAnalyzer {
         Lexer lexer = new Lexer(code);
         SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(lexer);
 
-         syntaxAnalyzer.program();
+        syntaxAnalyzer.program();
     }
 }

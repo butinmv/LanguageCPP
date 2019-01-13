@@ -11,15 +11,17 @@ public class Lexer {
     private int oldNumberCol;
     private int oldNumberSymbol;
 
-    private String tokenMathSymbols = "+-/%*(){}";
+    private String tokenMathSymbols = "+-/%*;(),{}";
     private TokenType[] tokenMathMass = {
             TokenType.PLUS,
             TokenType.MINUS,
             TokenType.DIVIDE,
             TokenType.MODULUS,
             TokenType.MULTIPLY,
+            TokenType.BOOL.SEMICOLON,
             TokenType.BRACKET_OPEN,
             TokenType.BRACKET_CLOSE,
+            TokenType.COMMA,
             TokenType.CURLY_BRACKET_OPEN,
             TokenType.CURLY_BRACKET_CLOSE
     };
@@ -77,8 +79,6 @@ public class Lexer {
             str += text.charAt(numberSymbol);
             addNumberSymbol();
         }
-        if (str.equals("main"))
-            return new Token(str, TokenType.MAIN);
         if (str.equals("int"))
             return new Token(str, TokenType.INT);
         if (str.equals("bool"))
