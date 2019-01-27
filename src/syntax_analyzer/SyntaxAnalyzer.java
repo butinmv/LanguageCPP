@@ -24,7 +24,8 @@ public class SyntaxAnalyzer {
                     function();
                 else
                     printError("Неизвестный символ");
-            } else if (token.getType() == TokenType.BOOL || token.getType() == TokenType.INT) {
+            }
+            else if (token.getType() == TokenType.BOOL || token.getType() == TokenType.INT) {
                 lexer.next();
                 nextTokenRead();
                 nextToken(TokenType.ID, "Ожидался идентификатор");
@@ -56,6 +57,48 @@ public class SyntaxAnalyzer {
             token = nextTokenRead();
             formalParameters();
         } while (token.getType() != TokenType.BRACKET_CLOSE);
+
+        token = nextTokenRead();
+        if (isCompoundOperator(token))
+            compoundOperator();
+        else
+            printError("Ожидался символ {");
+    }
+
+    private boolean isCompoundOperator(Token token) {
+        return token.getType() == TokenType.CURLY_BRACKET_OPEN;
+    }
+
+    private void compoundOperator() {
+        Token token = lexer.next();
+        while (token.getType() != TokenType.CURLY_BRACKET_CLOSE) {
+            if (isData(token))
+                data();
+            else if (isOperator(token))
+                operator();
+            else
+                printError("Неизвестный символ");
+        }
+    }
+
+    private void operator() {
+        Token token = nextTokenRead();
+
+        if (token.getType() == TokenType.SEMICOLON)
+            nextToken(TokenType.SEMICOLON, "Ожидался символ ;");
+        else if (isCompoundOperator(token))
+            compoundOperator();
+        else if (isOperSwitch(token))
+            operSwitch();
+        else if (isOperReturn(token))
+            operReturn();
+
+    }
+
+    private boolean isOperator(Token token) {
+        return  isOperSwitch(token) || token.getType() == TokenType.ID ||
+                isOperReturn(token) || token.getType() == TokenType.SEMICOLON ||
+                isCompoundOperator(token);
     }
 
     private void formalParameters() {
@@ -63,7 +106,6 @@ public class SyntaxAnalyzer {
         do {
             token = lexer.next();
             if (token.getType() == TokenType.INT || token.getType() == TokenType.BOOL) {
-                token = nextTokenRead();
                 nextToken(TokenType.ID, "Ожидался идентификатор");
                 token = nextTokenRead();
             }
