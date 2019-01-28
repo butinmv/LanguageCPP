@@ -43,6 +43,7 @@ public class SyntaxAnalyzer {
         }
     }
 
+    //TODO: Сделай data()
     private void data() {
 
     }
@@ -92,13 +93,38 @@ public class SyntaxAnalyzer {
             operSwitch();
         else if (isOperReturn(token))
             operReturn();
+        else if (token.getType() == TokenType.ID) {
+            token = nextTokenRead();
+            if (isAssigment(token))
+                assign();
+            else if (isCallFunction(token))
+                callFunction();
+            else
+                printError("Ошибка");
+        }
 
+    }
+
+    //TODO: Сделай operReturn
+    private void operReturn() {
+    }
+
+    //TODO: Сделай operSwitch
+    private void operSwitch() {
     }
 
     private boolean isOperator(Token token) {
         return  isOperSwitch(token) || token.getType() == TokenType.ID ||
                 isOperReturn(token) || token.getType() == TokenType.SEMICOLON ||
                 isCompoundOperator(token);
+    }
+
+    private boolean isOperReturn(Token token) {
+        return token.getType() == TokenType.RETURN;
+    }
+
+    private boolean isOperSwitch(Token token) {
+        return token.getType() == TokenType.SWITCH;
     }
 
     private void formalParameters() {
