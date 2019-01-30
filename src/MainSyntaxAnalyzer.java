@@ -1,5 +1,6 @@
 import io.Reader;
 import lexer.Lexer;
+import syntax_analyzer.Analysator;
 import syntax_analyzer.SyntaxAnalyzer;
 
 public class MainSyntaxAnalyzer {
@@ -13,8 +14,9 @@ public class MainSyntaxAnalyzer {
         }
 
         Lexer lexer = new Lexer(code);
-        SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(lexer);
+        Analysator syntaxAnalyzer = new Analysator(lexer);
 
         syntaxAnalyzer.program();
+        System.out.println("Ваш код идеален!");
     }
 }

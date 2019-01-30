@@ -155,7 +155,7 @@ public class Lexer {
         }
         try {
             Integer.parseInt(str);
-            return new Token(str, TokenType.INT);
+            return new Token(str, TokenType.TYPE_INT);
         } catch (NumberFormatException e) {
             return lexerError("Ошибка считывания TYPE_INT. Слишком длинная константа");
         }
