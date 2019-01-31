@@ -1,5 +1,5 @@
 int a(int k, bool a, int q, bool c) {
     return 3;
     int a = 3;
-    a(q, f,);
+    a(q, f, );
 }

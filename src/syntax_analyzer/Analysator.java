@@ -64,7 +64,6 @@ public class Analysator extends SyntaxAnalyzer {
             token = nextTokenRead();
             if (token.getType() == TokenType.COMMA)
                 nextToken();
-            token = nextTokenRead();
         } while (token.getType() == TokenType.COMMA);
     }
 
@@ -154,11 +153,11 @@ public class Analysator extends SyntaxAnalyzer {
             token = nextTokenRead();
             if (isExpression1(token))
                 expression1();
+            else
+                printError("Ожидалось выражение");
             token = nextTokenRead();
-            if (token.getType() == TokenType.COMMA) {
+            if (token.getType() == TokenType.COMMA)
                 nextToken();
-            }
-            token = nextTokenRead();
         } while (token.getType() == TokenType.COMMA);
         nextToken(TokenType.BRACKET_CLOSE, "Ожидася символ )");
         nextToken(TokenType.SEMICOLON, "Ожидася символ ;");
