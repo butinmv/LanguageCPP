@@ -11,13 +11,14 @@ public class Analysator extends SyntaxAnalyzer {
 
     public void program() {
         Token token = nextTokenRead();
-        while (token.getType() != TokenType.EOF) {
-            operatorOrData(token);
+        while (token.getType() != TokenType.EOF && token.getType() != TokenType.CURLY_BRACKET_CLOSE) {
+            functionOrData(token);
             token = nextTokenRead();
+            nextToken(TokenType.CURLY_BRACKET_CLOSE, "Ожидается сивол }");
         }
     }
 
-    void operatorOrData(Token token) {
+    private void functionOrData(Token token) {
         if (token.getType() == TokenType.VOID || token.getType() == TokenType.BOOL || token.getType() == TokenType.INT) {
             nextToken();
             nextToken(TokenType.ID, "Ожидался идентификатор");
@@ -29,9 +30,6 @@ public class Analysator extends SyntaxAnalyzer {
             else
                 printError("Неизвестный символ");
         }
-        else {
-            printError("Неизвестный оператор");
-        }
     }
 
     private boolean isFunction(Token token) {
@@ -42,8 +40,8 @@ public class Analysator extends SyntaxAnalyzer {
         nextToken(TokenType.BRACKET_OPEN, "Ожидался символ (");
         Token token;
         do {
-            token = nextTokenRead();
             formalParameters();
+            token = nextTokenRead();
         } while (token.getType() != TokenType.BRACKET_CLOSE);
         nextToken(TokenType.BRACKET_CLOSE, "Ожидался символ )");
 
@@ -54,6 +52,21 @@ public class Analysator extends SyntaxAnalyzer {
             printError("Ожидался символ {");
     }
 
+    private void formalParameters() {
+        Token token;
+        do {
+            token = nextTokenRead();
+            if (token.getType() == TokenType.INT || token.getType() == TokenType.BOOL)
+                nextToken();
+            else
+                printError("Ожидался тип INT или BOOL");
+            nextToken(TokenType.ID, "Ожидался идентификатор");
+            token = nextTokenRead();
+            if (token.getType() == TokenType.COMMA)
+                nextToken();
+        } while (token.getType() == TokenType.COMMA);
+    }
+
     private boolean isData(Token token) {
         return token.getType() == TokenType.COMMA || token.getType() == TokenType.SEMICOLON || token.getType() == TokenType.ASSIGN;
     }
@@ -62,7 +75,6 @@ public class Analysator extends SyntaxAnalyzer {
         Token token = nextTokenRead();
         if (token.getType() == TokenType.SEMICOLON) {
             nextToken();
-            return;
         } else if (token.getType() == TokenType.COMMA) {
             nextToken();
             nextToken(TokenType.ID, "Ожидался идентификатор");
@@ -76,32 +88,33 @@ public class Analysator extends SyntaxAnalyzer {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
     private boolean isCompoundOperator(Token token) {
         return token.getType() == TokenType.CURLY_BRACKET_OPEN;
     }
 
     private void compoundOperator() {
-        Token token = nextToken(TokenType.CURLY_BRACKET_OPEN, "Ожидался символ {");
+        Token token = nextTokenRead();
+        nextToken(TokenType.CURLY_BRACKET_OPEN, "Ожидался символ {");
+        token = nextTokenRead();
         while (token.getType() != TokenType.CURLY_BRACKET_CLOSE) {
-            if (isData(token))
-                data();
-            else if (isOperator(token))
-                operator();
-            else
-                printError("Неизвестный символ");
+            operatorOrData();
             token = nextTokenRead();
         }
-        nextToken(TokenType.CURLY_BRACKET_CLOSE, "Ожидался символ }");
+    }
+
+    private void operatorOrData() {
+        Token token = nextTokenRead();
+        if (token.getType() == TokenType.INT || token.getType() == TokenType.BOOL) {
+            nextToken();
+            nextToken(TokenType.ID, "Ожидался идентификатор");
+            token = nextTokenRead();
+            if (isData(token))
+                data();
+        }
+        else if (isOperator(token))
+            operator();
+        else
+            printError("Ожидались данные или оператор");
     }
 
     private void operator() {
@@ -116,6 +129,7 @@ public class Analysator extends SyntaxAnalyzer {
         else if (isOperReturn(token))
             operReturn();
         else if (token.getType() == TokenType.ID) {
+            nextToken();
             token = nextTokenRead();
             if (isAssigment(token))
                 assign();
@@ -131,7 +145,18 @@ public class Analysator extends SyntaxAnalyzer {
         return token.getType() == TokenType.BRACKET_OPEN;
     }
 
-    private void callFunction() {
+    @Override
+    void callFunction() {
+        Token token = nextTokenRead();
+        nextToken(TokenType.BRACKET_OPEN, "Ожидался символ (");
+        do {
+            token = nextTokenRead();
+            if (isExpression1(token))
+                expression1();
+            token = nextTokenRead();
+        } while (token.getType() == TokenType.COMMA);
+        nextToken(TokenType.BRACKET_CLOSE, "Ожидася символ )");
+        nextToken(TokenType.SEMICOLON, "Ожидася символ ;");
     }
 
     private void assign() {
@@ -141,110 +166,7 @@ public class Analysator extends SyntaxAnalyzer {
         nextToken(TokenType.SEMICOLON, "Ожидался символ ;");
     }
 
-    protected void expression1() {
-        expression2();
 
-        Token token = nextTokenRead();
-        while(token.getType() == TokenType.OR) {
-            nextToken();
-            expression2();
-            token = nextTokenRead();
-        }
-    }
-
-    private void expression2() {
-        expression3();
-
-        Token token = nextTokenRead();
-        while(token.getType() == TokenType.AND) {
-            nextToken();
-            expression3();
-            token = nextTokenRead();
-        }
-    }
-
-    private void expression3() {
-        expression4();
-
-        Token token = nextTokenRead();
-        while(token.getType() == TokenType.EQUAL || token.getType() == TokenType.NOT_EQUAL) {
-            nextToken();
-            expression4();
-            token = nextTokenRead();
-        }
-    }
-
-    private void expression4() {
-        expression5();
-
-        Token token = nextTokenRead();
-        while  (token.getType() == TokenType.MORE || token.getType() == TokenType.MORE_EQUAL ||
-                token.getType() == TokenType.LESS || token.getType() == TokenType.LESS_EQUAL) {
-            nextToken();
-            expression5();
-            token = nextTokenRead();
-        }
-    }
-
-    private void expression5() {
-        expression6();
-
-        Token token = nextTokenRead();
-        while  (token.getType() == TokenType.PLUS || token.getType() == TokenType.MINUS) {
-            nextToken();
-            expression6();
-            token = nextTokenRead();
-        }
-    }
-
-    private void expression6() {
-        expression7();
-        Token token = nextTokenRead();
-        while  (token.getType() == TokenType.MULTIPLY || token.getType() == TokenType.DIVIDE || token.getType() == TokenType.MODULUS) {
-            nextToken();
-            expression7();
-            token = nextTokenRead();
-        }
-    }
-
-    private void expression7() {
-        Token token = nextTokenRead();
-        while  (token.getType() == TokenType.PLUS || token.getType() == TokenType.MINUS || token.getType() == TokenType.NOT) {
-            nextToken();
-            token = nextTokenRead();
-        }
-        elementaryExpression();
-    }
-
-    private void elementaryExpression() {
-        Token token = nextTokenRead();
-        if (token.getType() == TokenType.ID) {
-            token = nextTokenRead();
-            if (token.getType() == TokenType.BRACKET_OPEN) {
-                callFunction();
-            }
-        }
-        else if (token.getType() == TokenType.BRACKET_OPEN) {
-            nextToken();
-            token = nextTokenRead();
-            if (isExpression1(token))
-                expression1();
-            else {
-                printError("Ожидалось выражение");
-            }
-            nextToken(TokenType.BRACKET_CLOSE, "Ожидался символ )");
-        }
-        else if (token.getType() == TokenType.TYPE_INT)
-            constInt();
-        else if (token.getType() == TokenType.TYPE_HEX)
-            constHex();
-        else if (token.getType() == TokenType.TRUE)
-            constTrue();
-        else if (token.getType() == TokenType.FALSE)
-            constfalse();
-        else
-            printError("Ошибка");
-    }
 
     private void operReturn() {
         nextToken(TokenType.RETURN, "Ожидался return");
@@ -256,65 +178,27 @@ public class Analysator extends SyntaxAnalyzer {
 
     //TODO: Сделай operSwitch
     private void operSwitch() {
+
     }
 
-    //TODO:  Доделать формальные параметры
-    private void formalParameters() {
-        Token token;
-        do {
-            token = nextTokenRead();
-            if (token.getType() == TokenType.INT || token.getType() == TokenType.BOOL) {
-                nextToken();
-                nextToken(TokenType.ID, "Ожидался идентификатор");
-                token = nextTokenRead();
-            }
-            if (token.getType() == TokenType.COMMA)
-                nextToken();
-        } while (token.getType() == TokenType.COMMA);
-    }
-
-    private void constfalse() {
+    @Override
+    protected void constFalse() {
         nextToken();
     }
 
-    private void constTrue() {
+    @Override
+    protected void constTrue() {
         nextToken();
     }
 
-    private void constHex() {
+    @Override
+    protected void constHex() {
         nextToken();
     }
 
-    private void constInt() {
+    @Override
+    protected void constInt() {
         nextToken();
-    }
-
-    protected boolean isExpression1(Token token) {
-        return isExpression2(token);
-    }
-
-    private boolean isExpression2(Token token) {
-        return isExpression3(token);
-    }
-
-    private boolean isExpression3(Token token) {
-        return isExpression4(token);
-    }
-
-    private boolean isExpression4(Token token) {
-        return isExpression5(token);
-    }
-
-    private boolean isExpression5(Token token) {
-        return isExpression6(token);
-    }
-
-    private boolean isExpression6(Token token) {
-        return isExpression7(token);
-    }
-
-    private boolean isExpression7(Token token) {
-        return isElementaryExpresion(token) || token.getType() == TokenType.PLUS || token.getType() == TokenType.MINUS || token.getType() == TokenType.NOT;
     }
 
     private boolean isAssigment(Token token) {
@@ -335,7 +219,7 @@ public class Analysator extends SyntaxAnalyzer {
         return token.getType() == TokenType.SWITCH;
     }
 
-    private boolean isElementaryExpresion(Token token) {
+    protected boolean isElementaryExpresion(Token token) {
         return  token.getType() == TokenType.ID ||
                 token.getType() == TokenType.BRACKET_OPEN ||
                 token.getType() == TokenType.TYPE_INT ||
