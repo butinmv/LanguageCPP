@@ -7,7 +7,7 @@ import lexer.TokenType;
 
 public abstract class SyntaxAnalyzer {
 
-    Lexer lexer;
+    private Lexer lexer;
 
     SyntaxAnalyzer(Lexer lexer) {
         this.lexer = lexer;
@@ -114,6 +114,7 @@ public abstract class SyntaxAnalyzer {
     private void elementaryExpression() {
         Token token = nextTokenRead();
         if (token.getType() == TokenType.ID) {
+            nextToken();
             token = nextTokenRead();
             if (token.getType() == TokenType.BRACKET_OPEN) {
                 callFunction();

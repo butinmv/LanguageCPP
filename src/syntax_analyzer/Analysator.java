@@ -145,7 +145,6 @@ public class Analysator extends SyntaxAnalyzer {
         return token.getType() == TokenType.BRACKET_OPEN;
     }
 
-    //TODO: НЕ РАБОТАЕТ! ДОПИСАТЬ!!!
     @Override
     void callFunction() {
         Token token = nextTokenRead();
@@ -155,6 +154,8 @@ public class Analysator extends SyntaxAnalyzer {
             if (isExpression1(token))
                 expression1();
             token = nextTokenRead();
+            if (token.getType() == TokenType.COMMA)
+                nextToken();
         } while (token.getType() == TokenType.COMMA);
         nextToken(TokenType.BRACKET_CLOSE, "Ожидася символ )");
         nextToken(TokenType.SEMICOLON, "Ожидася символ ;");
