@@ -1,5 +1,21 @@
 int a(int k, bool a, int q, bool c) {
-    return 3;
+
+    a = n + 3;
+
+    switch (n) {
+        case 1:
+            a();
+        case 2:
+            break;
+        case 3:
+            b();
+            break;
+        default:
+            a();
+            b = n + 3;
+    }
+
     int a = 3;
-    a(q, f, );
+    a(q, f);
+    return 3;
 }

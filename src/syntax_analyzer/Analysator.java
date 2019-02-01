@@ -131,8 +131,10 @@ public class Analysator extends SyntaxAnalyzer {
         else if (token.getType() == TokenType.ID) {
             nextToken();
             token = nextTokenRead();
-            if (isAssigment(token))
+            if (isAssigment(token)) {
+                nextToken();
                 assign();
+            }
             else if (isCallFunction(token))
                 callFunction();
             else
@@ -153,8 +155,6 @@ public class Analysator extends SyntaxAnalyzer {
             token = nextTokenRead();
             if (isExpression1(token))
                 expression1();
-            else
-                printError("Ожидалось выражение");
             token = nextTokenRead();
             if (token.getType() == TokenType.COMMA)
                 nextToken();
@@ -167,7 +167,6 @@ public class Analysator extends SyntaxAnalyzer {
         Token token = nextTokenRead();
         if(isExpression1(token))
             expression1();
-        nextToken(TokenType.SEMICOLON, "Ожидался символ ;");
     }
 
     private void operReturn() {
@@ -178,9 +177,72 @@ public class Analysator extends SyntaxAnalyzer {
         nextToken(TokenType.SEMICOLON, "Ожидался символ ;");
     }
 
-    //TODO: Сделай operSwitch
     private void operSwitch() {
+        nextToken(TokenType.SWITCH, "Ожидался switch");
+        nextToken(TokenType.BRACKET_OPEN, "Ожидался символ (");
+        Token token = nextTokenRead();
+        if(isExpression1(token))
+            expression1();
+        nextToken(TokenType.BRACKET_CLOSE, "Ожидался символ )");
+        nextToken(TokenType.CURLY_BRACKET_OPEN, "Ожидался символ {");
+        token = nextTokenRead();
+        while (token.getType() != TokenType.CURLY_BRACKET_CLOSE) {
+            if (isCases(token))
+                cases();
+            else if (isDefault(token))
+                defaultOper();
 
+            token = nextTokenRead();
+        }
+        nextToken(TokenType.CURLY_BRACKET_CLOSE, "Ожидался символ }");
+    }
+
+    private void defaultOper() {
+        nextToken(TokenType.DEFAULT, "Ожидался оператор default");
+        nextToken(TokenType.COLON, "Ожидался символ :");
+        Token token = nextTokenRead();
+        if(isCaseOper(token))
+            caseOper();
+        else
+            printError("Ожидались case операторы");
+    }
+
+    private void cases() {
+        nextToken(TokenType.CASE, "Ожидался оператор case");
+        nextToken(TokenType.TYPE_INT, "Ожидалась целая константа");
+        nextToken(TokenType.COLON, "Ожидался символ :");
+        Token token = nextTokenRead();
+        if (isCaseOper(token))
+            caseOper();
+        else
+            printError("Ожидались case-операторы");
+
+    }
+
+    private void caseOper() {
+        Token token = nextTokenRead();
+        while (token.getType() != TokenType.CASE && token.getType() != TokenType.CURLY_BRACKET_CLOSE  && token.getType() != TokenType.DEFAULT) {
+            if (isOperator(token))
+                operator();
+            else if (token.getType() == TokenType.BREAK) {
+                nextToken(TokenType.BREAK, "Ожидался оператор break");
+                nextToken(TokenType.SEMICOLON, "Ожидался символ ;");
+            }
+            token = nextTokenRead();
+        }
+
+    }
+
+    private boolean isCaseOper(Token token) {
+        return token.getType() == TokenType.BREAK || isOperator(token);
+    }
+
+    private boolean isDefault(Token token) {
+        return token.getType() == TokenType.DEFAULT;
+    }
+
+    private boolean isCases(Token token) {
+        return token.getType() == TokenType.CASE;
     }
 
     @Override

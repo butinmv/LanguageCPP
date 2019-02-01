@@ -11,14 +11,15 @@ public class Lexer {
     private int oldNumberCol;
     private int oldNumberSymbol;
 
-    private String tokenMathSymbols = "+-/%*;(),{}";
+    private String tokenMathSymbols = "+-/%*;:(),{}";
     private TokenType[] tokenMathMass = {
             TokenType.PLUS,
             TokenType.MINUS,
             TokenType.DIVIDE,
             TokenType.MODULUS,
             TokenType.MULTIPLY,
-            TokenType.BOOL.SEMICOLON,
+            TokenType.SEMICOLON,
+            TokenType.COLON,
             TokenType.BRACKET_OPEN,
             TokenType.BRACKET_CLOSE,
             TokenType.COMMA,
@@ -95,6 +96,8 @@ public class Lexer {
             return new Token(str, TokenType.SWITCH);
         if (str.equals("case"))
             return new Token(str, TokenType.CASE);
+        if (str.equals("break"))
+            return new Token(str, TokenType.BREAK);
         if (str.equals("default"))
             return new Token(str, TokenType.DEFAULT);
 

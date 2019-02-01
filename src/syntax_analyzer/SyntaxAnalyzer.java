@@ -19,8 +19,10 @@ public abstract class SyntaxAnalyzer {
 
     Token nextToken(TokenType type, String text) {
         Token token = lexer.next();
-        if (token.getType() != type)
+        if (token.getType() != type) {
+            System.out.println(token);
             printError(text);
+        }
         return token;
     }
 

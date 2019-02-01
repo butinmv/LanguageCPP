@@ -42,6 +42,7 @@ public enum TokenType {
     RETURN,
     SWITCH,
     CASE,
+    BREAK,
     DEFAULT,
     VOID,
 
