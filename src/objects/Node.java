@@ -1,15 +1,22 @@
 package objects;
 
-public class Node {
-    String name;
-    TypeObject typeObject;
-    public TypeData typeData;
+import java.util.ArrayList;
 
-    public boolean isInit;
-    public int count;
+public class Node {
+    private String name;
+    private TypeObject typeObject;
+    private TypeData typeData;
+
+    private boolean isInit;
+    private int count;
+    private static ArrayList<TypeData> typeOfParameters;
 
     private Node() {
         isInit = false;
+    }
+
+    public static void setTypeOfParameters(ArrayList<TypeData> typeOfParameters) {
+        Node.typeOfParameters = typeOfParameters;
     }
 
     public TypeObject getTypeObject() {
@@ -24,12 +31,13 @@ public class Node {
         return node;
     }
 
-    public static Node createFunction(String name, TypeData typeData, int count) {
+    public static Node createFunction(String name, TypeData typeData, int count, ArrayList<TypeData> typeOfParameters) {
         Node node = new Node();
         node.typeObject = TypeObject.FUNCTION;
         node.name = name;
         node.count = count;
         node.typeData = typeData;
+        Node.typeOfParameters.addAll(typeOfParameters);
         return node;
     }
 
@@ -42,8 +50,16 @@ public class Node {
     public static Node createConst(TypeData typeData) {
         Node node = new Node();
         node.typeObject = TypeObject.CONST;
+        node.typeData = typeData;
+        return node;
+    }
+
+    public static Node createUnknowk() {
+        Node node = new Node();
+        node.typeObject = TypeObject.CONST;
         node.typeData = TypeData.UNKNOWN;
         return node;
     }
+
 
 }
