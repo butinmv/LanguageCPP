@@ -1,5 +1,7 @@
 package objects;
 
+import java.util.ArrayList;
+
 public class ProgramTree {
     public Node node;
     private ProgramTree up;
@@ -21,9 +23,10 @@ public class ProgramTree {
         right = new ProgramTree(node, this, null, null);
     }
 
-    public ProgramTree findUpFunction(String name) {
+    public ProgramTree findUpFunction(String name, TypeData typeData, int count, ArrayList<TypeData> typeOfParameters) {
         ProgramTree i = this;
-        while (i != null && !(name.equals(i.node.name) && i.node.typeObject == TypeObject.FUNCTION)) {
+        while  (i != null && !(name.equals(i.node.name) && i.node.typeObject == TypeObject.FUNCTION &&
+                i.node.typeData == typeData) && i.node.count == count && Node.typeOfParameters == typeOfParameters) {
             i = i.up;
         }
         return i;
