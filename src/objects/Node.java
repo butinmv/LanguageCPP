@@ -3,13 +3,13 @@ package objects;
 import java.util.ArrayList;
 
 public class Node {
-    private String name;
-    private TypeObject typeObject;
-    private TypeData typeData;
+    String name;
+    TypeObject typeObject;
+    public TypeData typeData;
 
-    private boolean isInit;
-    private int count;
-    private static ArrayList<TypeData> typeOfParameters;
+    public boolean isInit;
+    public int count;
+    public static ArrayList<TypeData> typeOfParameters;
 
     private Node() {
         isInit = false;
