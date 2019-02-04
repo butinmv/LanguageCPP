@@ -3,8 +3,18 @@ package syntax_analyzer;
 import lexer.Lexer;
 import lexer.Token;
 import lexer.TokenType;
+import objects.Node;
+import objects.ProgramTree;
+import objects.TypeObject;
+
+import java.util.Deque;
+import java.util.LinkedList;
 
 public class Analysator extends SyntaxAnalyzer {
+    private ProgramTree tree;
+    private ProgramTree thisTree;
+    private Deque<ProgramTree> stack = new LinkedList<>();
+
     public Analysator(Lexer lexer) {
         super(lexer);
     }
@@ -67,6 +77,14 @@ public class Analysator extends SyntaxAnalyzer {
         } while (token.getType() == TokenType.COMMA);
     }
 
+    /*
+    private void addFunction(Token token) {
+        if (thisTree.findUpFunction(token.getText()) != null)
+            printSemError("Функция " + token.getText() + " уже была объявлена");
+        thisTree.setLeft(Node.createFunction(token.getText(), ));
+        thisTree = thisTree.left;
+    }
+    */
     private boolean isData(Token token) {
         return token.getType() == TokenType.COMMA || token.getType() == TokenType.SEMICOLON || token.getType() == TokenType.ASSIGN;
     }
@@ -95,10 +113,27 @@ public class Analysator extends SyntaxAnalyzer {
     private void compoundOperator() {
         Token token = nextTokenRead();
         nextToken(TokenType.CURLY_BRACKET_OPEN, "Ожидался символ {");
+
+        in();
+
         token = nextTokenRead();
         while (token.getType() != TokenType.CURLY_BRACKET_CLOSE) {
             operatorOrData();
             token = nextTokenRead();
+        }
+    }
+
+    private void in() {
+        stack.push(thisTree);
+        thisTree.setRight(Node.createEmptyNode());
+        thisTree = thisTree.right;
+    }
+
+    private void out() {
+        thisTree = stack.pop();
+        if (thisTree.node.getTypeObject() == TypeObject.EMPTY) {
+            thisTree.setLeft(Node.createEmptyNode());
+            thisTree = thisTree.left;
         }
     }
 
