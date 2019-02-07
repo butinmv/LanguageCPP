@@ -1,21 +1,16 @@
-int a(int k, bool a, int q, bool c) {
-
-    a = n + 3;
-
-    switch (n) {
-        case 1:
-            a();
-        case 2:
-            break;
-        case 3:
-            b();
-            break;
-        default:
-            a();
-            b = n + 3;
-    }
-
+int a(int a, bool c) {
+    a = 3;
     int a = 3;
-    a(q, f);
-    return 3;
+}
+
+int a(int a, bool c) {
+    int a = 3;
+}
+
+int a(int a, bool c) {
+    int a = 3;
+}
+
+int a(int a, bool c) {
+    int a = 3;
 }

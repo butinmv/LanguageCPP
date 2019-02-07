@@ -46,6 +46,8 @@ public enum TokenType {
     DEFAULT,
     VOID,
 
+    MAIN,
+
     ERROR,
     EOF
 }

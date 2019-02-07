@@ -13,16 +13,17 @@ public abstract class SyntaxAnalyzer {
         this.lexer = lexer;
     }
 
-    void nextToken() {
-        lexer.next();
+    Token nextToken() {
+        return lexer.next();
     }
 
-    void nextToken(TokenType type, String text) {
+    Token nextToken(TokenType type, String text) {
         Token token = lexer.next();
         if (token.getType() != type) {
             System.out.println(token);
             printError(text);
         }
+        return token;
     }
 
     Token nextTokenRead() {
@@ -35,6 +36,10 @@ public abstract class SyntaxAnalyzer {
     void printError(String errorText) {
         System.out.println(errorText + " строка " + lexer.getNumberRow() + " столбик " + lexer.getNumberCol());
         System.exit(1);
+    }
+
+    void printSemError(String errorText) {
+        System.out.println(errorText + " строка " + lexer.getNumberRow() + " столбик " + lexer.getNumberCol());
     }
 
     void expression1() {

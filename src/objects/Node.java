@@ -41,6 +41,14 @@ public class Node {
         return node;
     }
 
+    public static Node createFunction(String name) {
+        Node node = new Node();
+        node.typeObject = TypeObject.FUNCTION;
+        node.name = name;
+        node.typeObject = TypeObject.EMPTY;
+        return node;
+    }
+
     public static Node createEmptyNode() {
         Node node = new Node();
         node.typeObject = TypeObject.EMPTY;
