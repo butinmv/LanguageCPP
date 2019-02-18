@@ -1,16 +1,5 @@
-int a(int a, bool c) {
-    a = 3;
-    int a = 3;
-}
+int d, c, q, f;
+bool l = false;
+int f() {
 
-int a(int a, bool c) {
-    int a = 3;
-}
-
-int a(int a, bool c) {
-    int a = 3;
-}
-
-int a(int a, bool c) {
-    int a = 3;
 }

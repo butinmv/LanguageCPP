@@ -2,7 +2,8 @@ package objects;
 
 public enum TypeData {
     INTEGER,
+    TRUE,
+    FALSE,
     BOOL,
-    VOID,
     UNKNOWN
 }

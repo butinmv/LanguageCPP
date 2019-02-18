@@ -1,5 +1,7 @@
 package objects;
 
+import lexer.TokenType;
+
 import java.util.ArrayList;
 
 public class ProgramTree {
@@ -8,25 +10,32 @@ public class ProgramTree {
     public ProgramTree left;
     public ProgramTree right;
 
-    public ProgramTree(Node node, ProgramTree up, ProgramTree left, ProgramTree right) {
+    public ProgramTree(ProgramTree left, ProgramTree right, ProgramTree up, Node node) {
         this.node = node;
         this.up = up;
         this.left = left;
         this.right = right;
     }
 
+    public ProgramTree() {
+        node = Node.createEmptyNode();
+        up = null;
+        left = null;
+        right = null;
+    }
+
     public void setLeft(Node node) {
-        left = new ProgramTree(node, this, null, null);
+        left = new ProgramTree(null, null, this, node);
     }
 
     public void setRight(Node node) {
-        right = new ProgramTree(node, this, null, null);
+        right = new ProgramTree(null, null, this, node);
     }
 
-    public ProgramTree findUpFunction(String name, TypeData typeData, int count, ArrayList<TypeData> typeOfParameters) {
+    public ProgramTree findUpFunction(String name, TypeData typeData, int count) {
         ProgramTree i = this;
         while  (i != null && !(name.equals(i.node.name) && i.node.typeObject == TypeObject.FUNCTION &&
-                i.node.typeData == typeData) && i.node.count == count && Node.typeOfParameters == typeOfParameters) {
+                i.node.typeData == typeData) && i.node.count == count) {
             i = i.up;
         }
         return i;

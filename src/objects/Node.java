@@ -1,5 +1,7 @@
 package objects;
 
+import lexer.TokenType;
+
 import java.util.ArrayList;
 
 public class Node {
@@ -9,14 +11,11 @@ public class Node {
 
     public boolean isInit;
     public int count;
-    public static ArrayList<TypeData> typeOfParameters;
+    public Object value = 0;
+
 
     private Node() {
         isInit = false;
-    }
-
-    public static void setTypeOfParameters(ArrayList<TypeData> typeOfParameters) {
-        Node.typeOfParameters = typeOfParameters;
     }
 
     public TypeObject getTypeObject() {
@@ -31,13 +30,12 @@ public class Node {
         return node;
     }
 
-    public static Node createFunction(String name, TypeData typeData, int count, ArrayList<TypeData> typeOfParameters) {
+    public static Node createFunction(String name, TypeData typeData, int count) {
         Node node = new Node();
         node.typeObject = TypeObject.FUNCTION;
         node.name = name;
         node.count = count;
         node.typeData = typeData;
-        Node.typeOfParameters.addAll(typeOfParameters);
         return node;
     }
 
@@ -69,5 +67,18 @@ public class Node {
         return node;
     }
 
+    @Override
+    public String toString() {
+        if (typeObject == TypeObject.EMPTY)
+            return typeObject.toString();
+        String str = typeObject.toString();
+        if (typeObject == TypeObject.VAR) {
+            if (typeData == TypeData.INTEGER)
+                str += " Value=" + Integer.parseInt(String.valueOf(value));
+            else
+                str += " Value=" + Boolean.parseBoolean(String.valueOf(value));
+        }
 
+        return str;
+    }
 }

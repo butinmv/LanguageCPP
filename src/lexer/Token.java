@@ -1,5 +1,7 @@
 package lexer;
 
+import objects.TypeData;
+
 public class Token {
     private String text;
     private TokenType type;
