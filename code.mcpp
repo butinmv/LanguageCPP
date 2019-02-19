@@ -1,5 +1,9 @@
-int d, c, q, f;
-bool l = false;
-int f() {
+int d;
+int c;
 
+int main(int d, int c) {
+    int n;
+    { int z, a; }
+    { bool q, p; }
+    { int z, a; }
 }

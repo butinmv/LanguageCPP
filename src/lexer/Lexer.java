@@ -100,8 +100,6 @@ public class Lexer {
             return new Token(str, TokenType.BREAK);
         if (str.equals("default"))
             return new Token(str, TokenType.DEFAULT);
-        if (str.equals("main"))
-            return new Token(str, TokenType.MAIN);
 
         return new Token(str, TokenType.ID);
     }

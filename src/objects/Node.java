@@ -8,11 +8,15 @@ public class Node {
     String name;
     TypeObject typeObject;
     public TypeData typeData;
+    ArrayList<TypeData> parameters;
 
     public boolean isInit;
     public int count;
     public Object value = 0;
 
+    public void setParameters(ArrayList<TypeData> parameters) {
+        this.parameters = parameters;
+    }
 
     private Node() {
         isInit = false;
@@ -30,20 +34,12 @@ public class Node {
         return node;
     }
 
-    public static Node createFunction(String name, TypeData typeData, int count) {
+    public static Node createFunction(String name, TypeData typeData) {
         Node node = new Node();
         node.typeObject = TypeObject.FUNCTION;
         node.name = name;
-        node.count = count;
         node.typeData = typeData;
-        return node;
-    }
-
-    public static Node createFunction(String name) {
-        Node node = new Node();
-        node.typeObject = TypeObject.FUNCTION;
-        node.name = name;
-        node.typeObject = TypeObject.EMPTY;
+        node.parameters = null;
         return node;
     }
 
@@ -74,9 +70,13 @@ public class Node {
         String str = typeObject.toString();
         if (typeObject == TypeObject.VAR) {
             if (typeData == TypeData.INTEGER)
-                str += " Value=" + Integer.parseInt(String.valueOf(value));
+                str += " " + this.name + " " + typeData;
             else
-                str += " Value=" + Boolean.parseBoolean(String.valueOf(value));
+                str += " " + this.name + " " + typeData;
+        }
+        if (typeObject == TypeObject.FUNCTION) {
+            str += " " + this.name;
+            str += " Result=" + this.typeData;
         }
 
         return str;

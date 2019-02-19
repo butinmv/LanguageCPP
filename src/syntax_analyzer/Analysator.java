@@ -8,13 +8,13 @@ import objects.ProgramTree;
 import objects.TypeData;
 import objects.TypeObject;
 
-import java.util.Deque;
-import java.util.LinkedList;
+import java.util.*;
 
 public class Analysator extends SyntaxAnalyzer {
     private ProgramTree tree;
     private ProgramTree thisTree;
     private Deque<ProgramTree> stack = new LinkedList<>();
+    boolean parameters = false;
 
     private TypeData typeData;
 
@@ -48,15 +48,14 @@ public class Analysator extends SyntaxAnalyzer {
         else
             typeData = TypeData.INTEGER;
 
-
-
         nextToken();
         Token tokenID = nextToken(TokenType.ID, "Ожидался идентификатор");
 
         token = nextTokenRead();
         if (isFunction(token)) {
-            //addFunc(tokenID);
-            function();
+            Node node = addFunc(tokenID, typeData);
+            ArrayList<TypeData> parameters = function();
+            node.setParameters(parameters);
         }
         else if (isData(token)) {
             addVar(typeData, tokenID);
@@ -70,11 +69,14 @@ public class Analysator extends SyntaxAnalyzer {
         return token.getType() == TokenType.BRACKET_OPEN;
     }
 
-    private void function() {
+    private ArrayList<TypeData> function() {
+        in();
+        this.parameters = true;
         nextToken(TokenType.BRACKET_OPEN, "Ожидался символ (");
         Token token;
+        ArrayList<TypeData> parameters = new ArrayList<>();
         do {
-            int countOfParameters = formalParameters();
+            parameters = formalParameters();
             token = nextTokenRead();
         } while (token.getType() != TokenType.BRACKET_CLOSE);
         nextToken(TokenType.BRACKET_CLOSE, "Ожидался символ )");
@@ -84,28 +86,49 @@ public class Analysator extends SyntaxAnalyzer {
             compoundOperator();
         else
             printError("Ожидался символ {");
+        return parameters;
     }
 
-    private int formalParameters() {
+    private ArrayList<TypeData> formalParameters() {
         Token token;
-        int countOfParameters = 0;
+        ArrayList<TypeData> parameters = new ArrayList<>();
         do {
             token = nextTokenRead();
             if (token.getType() == TokenType.INT || token.getType() == TokenType.BOOL) {
-                Token tokenType = nextToken();
-                nextToken(TokenType.ID, "Ожидался идентификатор");
-                countOfParameters++;
+                if (token.getType() == TokenType.INT) {
+                    typeData = TypeData.INTEGER;
+                    parameters.add(TypeData.INTEGER);
+                }
+                else {
+                    typeData = TypeData.BOOL;
+                    parameters.add(TypeData.BOOL);
+                }
+
+                nextToken();
+                Token tokenName = nextToken(TokenType.ID, "Ожидался идентификатор");
+                addVar(typeData, tokenName);
             }
+            else
+                printError("Ожидался тип INT или тип BOOL");
             token = nextTokenRead();
             if (token.getType() == TokenType.COMMA)
                 nextToken();
         } while (token.getType() == TokenType.COMMA);
 
-        return countOfParameters;
+        return parameters;
+    }
+
+    private Node addFunc(Token token, TypeData typeData) {
+        if (thisTree.findUpFunction(token.getText(), typeData) != null)
+            printSemError("Функция '" + token.getText() + "' уже была объявлена");
+        Node node = Node.createFunction(token.getText(), typeData);
+        thisTree.setLeft(node);
+        thisTree = thisTree.left;
+        return node;
     }
 
     private void addVar(TypeData typeData, Token token) {
-        if (thisTree.findUpVar(token.getText()) != null) {
+        if (thisTree.findUpVar(token.getText()) != null && !parameters) {
             printSemError("Переменная " + token.getText() + " уже существует");
         }
         else {
@@ -121,12 +144,11 @@ public class Analysator extends SyntaxAnalyzer {
 
     private void data(TypeData typeData) {
         Token token = nextTokenRead();
-        Token tokenID = null;
         if (token.getType() == TokenType.SEMICOLON) {
             nextToken();
         } else if (token.getType() == TokenType.COMMA) {
             nextToken();
-            tokenID = nextToken(TokenType.ID, "Ожидался идентификатор");
+            Token tokenID = nextToken(TokenType.ID, "Ожидался идентификатор");
             addVar(typeData, tokenID);
             data(typeData);
         } else if (token.getType() == TokenType.ASSIGN) {
@@ -140,59 +162,53 @@ public class Analysator extends SyntaxAnalyzer {
             printError("Ожидался символ ;");
     }
 
-    private boolean inType(TypeData typeData1, TypeData typeData2) {
-        if (typeData1 == TypeData.INTEGER && typeData2 == TypeData.INTEGER)
-            return true;
-        if (typeData1 == TypeData.BOOL && typeData2 == TypeData.BOOL)
-            return true;
-        if (typeData1 == TypeData.INTEGER && typeData2 == TypeData.BOOL)
-            return true;
-        if (typeData1 == TypeData.BOOL && typeData2 == TypeData.INTEGER)
-            return true;
-        return false;
-    }
-
     private boolean isCompoundOperator(Token token) {
         return token.getType() == TokenType.CURLY_BRACKET_OPEN;
     }
 
     private void compoundOperator() {
-        Token token = nextTokenRead();
-        in();
+        if(!this.parameters)
+            in();
+        else
+            this.parameters = false;
         nextToken(TokenType.CURLY_BRACKET_OPEN, "Ожидался символ {");
-        token = nextTokenRead();
+        Token token = nextTokenRead();
         while (token.getType() != TokenType.CURLY_BRACKET_CLOSE) {
             operatorOrData();
             token = nextTokenRead();
         }
+
         out();
         nextToken(TokenType.CURLY_BRACKET_CLOSE, "Ожидался символ }");
     }
 
-
     private void in() {
+        if (thisTree.right != null) {
+            thisTree.setLeft(Node.createEmptyNode());
+            thisTree = thisTree.left;
+        }
         stack.push(thisTree);
         thisTree.setRight(Node.createEmptyNode());
         thisTree = thisTree.right;
     }
-
     private void out() {
         thisTree = stack.pop();
-        if (thisTree.node.getTypeObject() == TypeObject.EMPTY) {
-            thisTree.setLeft(Node.createEmptyNode());
-            thisTree = thisTree.left;
-        }
     }
-
 
     private void operatorOrData() {
         Token token = nextTokenRead();
         if (token.getType() == TokenType.INT || token.getType() == TokenType.BOOL) {
+            if (token.getType() == TokenType.INT)
+                typeData = TypeData.INTEGER;
+            else
+                typeData = TypeData.BOOL;
             nextToken();
-            nextToken(TokenType.ID, "Ожидался идентификатор");
+            Token tokenName = nextToken(TokenType.ID, "Ожидался идентификатор");
             token = nextTokenRead();
-            if (isData(token))
+            if (isData(token)) {
+                addVar(typeData, tokenName);
                 data(typeData);
+            }
         }
         else if (isOperator(token))
             operator();

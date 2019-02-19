@@ -32,10 +32,10 @@ public class ProgramTree {
         right = new ProgramTree(null, null, this, node);
     }
 
-    public ProgramTree findUpFunction(String name, TypeData typeData, int count) {
+    public ProgramTree findUpFunction(String name, TypeData typeData) {
         ProgramTree i = this;
         while  (i != null && !(name.equals(i.node.name) && i.node.typeObject == TypeObject.FUNCTION &&
-                i.node.typeData == typeData) && i.node.count == count) {
+                i.node.typeData == typeData)) {
             i = i.up;
         }
         return i;
