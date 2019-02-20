@@ -11,11 +11,13 @@ public class Node {
     ArrayList<TypeData> parameters;
 
     public boolean isInit;
-    public int count;
-    public Object value = 0;
 
     public void setParameters(ArrayList<TypeData> parameters) {
         this.parameters = parameters;
+    }
+
+    public ArrayList<TypeData> getParameters() {
+        return parameters;
     }
 
     private Node() {

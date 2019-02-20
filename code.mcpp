@@ -1,9 +1,9 @@
-int d;
-int c;
+bool f(bool c) {
+
+}
 
 int main(int d, int c) {
-    int n;
-    { int z, a; }
-    { bool q, p; }
-    { int z, a; }
+    d = f(true);
 }
+
+

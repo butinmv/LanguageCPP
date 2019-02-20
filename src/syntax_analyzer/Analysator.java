@@ -10,16 +10,17 @@ import objects.TypeObject;
 
 import java.util.*;
 
-public class Analysator extends SyntaxAnalyzer {
+public class Analysator {
     private ProgramTree tree;
     private ProgramTree thisTree;
     private Deque<ProgramTree> stack = new LinkedList<>();
     boolean parameters = false;
 
     private TypeData typeData;
+    private Lexer lexer;
 
     public Analysator(Lexer lexer) {
-        super(lexer);
+        this.lexer = lexer;
         tree = thisTree = new ProgramTree();
     }
 
@@ -41,7 +42,6 @@ public class Analysator extends SyntaxAnalyzer {
 
     private void functionOrData() {
         Token token = nextTokenRead();
-        boolean init = false;
 
         if (TokenType.BOOL == token.getType())
             typeData = TypeData.BOOL;
@@ -229,13 +229,14 @@ public class Analysator extends SyntaxAnalyzer {
             operReturn();
         else if (token.getType() == TokenType.ID) {
             nextToken();
-            token = nextTokenRead();
-            if (isAssigment(token)) {
+            Token token1 = nextTokenRead();
+            if (isAssigment(token1)) {
                 nextToken();
-                assign();
+                assign(token);
             }
-            else if (isCallFunction(token))
-                callFunction();
+            else if (isCallFunction(token1)) {
+                callFunction(token);
+            }
             else
                 printError("Ошибка");
         }
@@ -246,32 +247,67 @@ public class Analysator extends SyntaxAnalyzer {
         return token.getType() == TokenType.BRACKET_OPEN;
     }
 
-    @Override
-    void callFunction() {
-        Token token = nextTokenRead();
+    private Node callFunction(Token tokenIn) {
+        Token token;
+        ArrayList<TypeData> parameters = new ArrayList<>();
         nextToken(TokenType.BRACKET_OPEN, "Ожидался символ (");
         do {
             token = nextTokenRead();
+            if (token.getType() == TokenType.TYPE_INT || token.getType() == TokenType.TYPE_HEX) {
+                typeData = TypeData.INTEGER;
+                parameters.add(typeData);
+            } else if (token.getType() == TokenType.TRUE || token.getType() ==TokenType.FALSE) {
+                typeData = TypeData.BOOL;
+                parameters.add(typeData);
+            } else {
+                typeData = TypeData.UNKNOWN;
+                printSemError("Неизвестный тип");
+            }
             if (isExpression1(token))
                 expression1();
             token = nextTokenRead();
             if (token.getType() == TokenType.COMMA)
                 nextToken();
+
         } while (token.getType() == TokenType.COMMA);
+        Node function;
         nextToken(TokenType.BRACKET_CLOSE, "Ожидася символ )");
+        if (thisTree.findUp(tokenIn.getText()) == null) {
+            printSemError("Данная функция " + tokenIn.getText() + " была необъявленна");
+            return thisTree.node;
+        } else {
+            function = thisTree.findUp(tokenIn.getText()).node;
+        }
+        if (function != null && function.getTypeObject() == TypeObject.FUNCTION) {
+            if (function.getParameters().size() == parameters.size() && function.getParameters().containsAll(parameters))
+                return thisTree.node;
+            else {
+                printSemError("Ошибка входных типов входных параметров в функции " + tokenIn.getText());
+                return thisTree.node;
+            }
+
+        } else {
+            printSemError("Данная функция " + tokenIn.getText() + " была необъявленна");
+            return null;
+        }
     }
 
-    private void assign() {
+    private void assign(Token tokenID) {
         Token token = nextTokenRead();
         if(isExpression1(token)) {
-            expression1();
+
+            if (thisTree.findUpVar(tokenID.getText()) == null) {
+                printSemError("Переменная " + tokenID.getText() + " не найдена");
+            } else {
+
+            }
+            Node node = expression1();
         }
         token = nextTokenRead();
         if (token.getType() == TokenType.SEMICOLON)
             nextToken();
         else
             printError("Ожидался символ ;");
-
     }
 
     private void operReturn() {
@@ -337,7 +373,6 @@ public class Analysator extends SyntaxAnalyzer {
             }
             token = nextTokenRead();
         }
-
     }
 
     private boolean isCaseOper(Token token) {
@@ -350,26 +385,6 @@ public class Analysator extends SyntaxAnalyzer {
 
     private boolean isCases(Token token) {
         return token.getType() == TokenType.CASE;
-    }
-
-    @Override
-    protected void constFalse() {
-        nextToken();
-    }
-
-    @Override
-    protected void constTrue() {
-        nextToken();
-    }
-
-    @Override
-    protected void constHex() {
-        nextToken();
-    }
-
-    @Override
-    protected void constInt() {
-        nextToken();
     }
 
     private boolean isAssigment(Token token) {
@@ -390,7 +405,7 @@ public class Analysator extends SyntaxAnalyzer {
         return token.getType() == TokenType.SWITCH;
     }
 
-    protected boolean isElementaryExpresion(Token token) {
+    private boolean isElementaryExpresion(Token token) {
         return  token.getType() == TokenType.ID ||
                 token.getType() == TokenType.BRACKET_OPEN ||
                 token.getType() == TokenType.TYPE_INT ||
@@ -401,5 +416,225 @@ public class Analysator extends SyntaxAnalyzer {
 
     public ProgramTree getTree() {
         return tree;
+    }
+
+    private Token nextToken() {
+        return lexer.next();
+    }
+
+    private Token nextToken(TokenType type, String text) {
+        Token token = lexer.next();
+        if (token.getType() != type) {
+            System.out.println(token);
+            printError(text);
+        }
+        return token;
+    }
+
+    private Token nextTokenRead() {
+        lexer.save();
+        Token token = lexer.next();
+        lexer.ret();
+        return token;
+    }
+
+    public void printError(String errorText) {
+        System.out.println(errorText + " строка " + lexer.getNumberRow() + " столбик " + lexer.getNumberCol());
+        System.exit(1);
+    }
+
+    private void printSemError(String errorText) {
+        System.out.println(errorText + " строка " + lexer.getNumberRow() + " столбик " + lexer.getNumberCol());
+    }
+
+    private Node expression1() {
+        Node node = expression2();
+
+        Token token = nextTokenRead();
+        while(token.getType() == TokenType.OR) {
+            nextToken();
+            expression2();
+            node.typeData = TypeData.BOOL;
+            token = nextTokenRead();
+        }
+
+        return node;
+    }
+
+    private Node expression2() {
+        Node node = expression3();
+
+        Token token = nextTokenRead();
+        while(token.getType() == TokenType.AND) {
+            nextToken();
+            expression3();
+            node.typeData = TypeData.BOOL;
+            token = nextTokenRead();
+        }
+
+        return node;
+    }
+
+    private Node expression3() {
+        Node node = expression4();
+
+        Token token = nextTokenRead();
+        while(token.getType() == TokenType.EQUAL || token.getType() == TokenType.NOT_EQUAL) {
+            nextToken();
+            expression4();
+            node.typeData = TypeData.BOOL;
+            token = nextTokenRead();
+        }
+
+        return node;
+    }
+
+    private Node expression4() {
+        Node node = expression5();
+
+        Token token = nextTokenRead();
+        while  (token.getType() == TokenType.MORE || token.getType() == TokenType.MORE_EQUAL ||
+                token.getType() == TokenType.LESS || token.getType() == TokenType.LESS_EQUAL) {
+            nextToken();
+            expression5();
+            node.typeData = TypeData.BOOL;
+            token = nextTokenRead();
+        }
+        return node;
+    }
+
+    private Node expression5() {
+        Node node = expression6();
+
+        Token token = nextTokenRead();
+        while  (token.getType() == TokenType.PLUS || token.getType() == TokenType.MINUS) {
+            nextToken();
+            expression6();
+            node.typeData = TypeData.INTEGER;
+            token = nextTokenRead();
+        }
+        return node;
+    }
+
+    private Node expression6() {
+        Node node = expression7();
+        Token token = nextTokenRead();
+        while  (token.getType() == TokenType.MULTIPLY || token.getType() == TokenType.DIVIDE || token.getType() == TokenType.MODULUS) {
+            nextToken();
+            expression7();
+            node.typeData = TypeData.INTEGER;
+            token = nextTokenRead();
+        }
+
+        return  node;
+    }
+
+    private Node expression7() {
+        Token token = nextTokenRead();
+        TypeData isZnak = TypeData.INTEGER;
+        while  (token.getType() == TokenType.PLUS || token.getType() == TokenType.MINUS || token.getType() == TokenType.NOT) {
+            if (token.getType() == TokenType.NOT) {
+                isZnak = TypeData.BOOL;
+            }
+            nextToken();
+            token = nextTokenRead();
+        }
+
+        Node node = elementaryExpression();
+        if (isZnak == TypeData.INTEGER) {
+            node.typeData = TypeData.INTEGER;
+            return node;
+        }
+        else {
+            node.typeData = TypeData.BOOL;
+            return node;
+        }
+    }
+
+    private Node elementaryExpression() {
+        Token token = nextTokenRead();
+        Node nodeFunc;
+
+        if (token.getType() == TokenType.ID) {
+            Token tokenName = token;
+            nextToken();
+            token = nextTokenRead();
+
+            // TODO!!!!
+            if (thisTree.findUpVar(tokenName.getText()) != null) {
+                if (!parameters) {
+                    return thisTree.node;
+                } else {
+                    printSemError("Переменная не была объявлена");
+                }
+            }
+
+            if (token.getType() == TokenType.BRACKET_OPEN) {
+                nodeFunc = callFunction(tokenName);
+                return nodeFunc;
+            }
+        }
+        else if (token.getType() == TokenType.BRACKET_OPEN) {
+            nextToken();
+            token = nextTokenRead();
+            Node node = null;
+            if (isExpression1(token)) {
+                node = expression1();
+            }
+            else {
+                printError("Ожидалось выражение");
+            }
+            nextToken(TokenType.BRACKET_CLOSE, "Ожидался символ )");
+            return node;
+        }
+        else if (token.getType() == TokenType.TYPE_INT) {
+            nextToken();
+            return Node.createConst(TypeData.INTEGER);
+        }
+        else if (token.getType() == TokenType.TYPE_HEX) {
+            nextToken();
+            return Node.createConst(TypeData.INTEGER);
+        }
+        else if (token.getType() == TokenType.TRUE) {
+            nextToken();
+            return Node.createConst(TypeData.BOOL);
+        }
+        else if (token.getType() == TokenType.FALSE) {
+            nextToken();
+            return Node.createConst(TypeData.BOOL);
+        }
+        else {
+            printError("Ошибка");
+            return null;
+        }
+        return null;
+    }
+
+    private boolean isExpression1(Token token) {
+        return isExpression2(token);
+    }
+
+    private boolean isExpression2(Token token) {
+        return isExpression3(token);
+    }
+
+    private boolean isExpression3(Token token) {
+        return isExpression4(token);
+    }
+
+    private boolean isExpression4(Token token) {
+        return isExpression5(token);
+    }
+
+    private boolean isExpression5(Token token) {
+        return isExpression6(token);
+    }
+
+    private boolean isExpression6(Token token) {
+        return isExpression7(token);
+    }
+
+    private boolean isExpression7(Token token) {
+        return isElementaryExpresion(token) || token.getType() == TokenType.PLUS || token.getType() == TokenType.MINUS || token.getType() == TokenType.NOT;
     }
 }
