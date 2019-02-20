@@ -1,9 +1,28 @@
-bool f(bool c) {
 
+bool a = true, b = false, c = 10 , d = -10;
+
+int gg(bool t) {
+    return t;
 }
 
-int main(int d, int c) {
-    d = f(true);
+bool gg1(int t) {
+     return t;
+ }
+
+int main(int c) {
+    int x = gg(gg1(2));
+    switch (x) {
+        case 1:
+            f = gg1(x);
+            break;
+
+        case 2:
+            c = gg(x);
+
+        default:
+            break;
+    }
 }
+
 
 

@@ -253,7 +253,10 @@ public class Analysator {
         nextToken(TokenType.BRACKET_OPEN, "Ожидался символ (");
         do {
             token = nextTokenRead();
-            if (token.getType() == TokenType.TYPE_INT || token.getType() == TokenType.TYPE_HEX) {
+            Node node;
+
+            /*
+            if (token.getType() == TokenType.TYPE_DEC || token.getType() == TokenType.TYPE_HEX) {
                 typeData = TypeData.INTEGER;
                 parameters.add(typeData);
             } else if (token.getType() == TokenType.TRUE || token.getType() ==TokenType.FALSE) {
@@ -263,12 +266,17 @@ public class Analysator {
                 typeData = TypeData.UNKNOWN;
                 printSemError("Неизвестный тип");
             }
-            if (isExpression1(token))
-                expression1();
+            */
+
+
+            if (isExpression1(token)) {
+                node = expression1();
+                parameters.add(node.typeData);
+            }
+
             token = nextTokenRead();
             if (token.getType() == TokenType.COMMA)
                 nextToken();
-
         } while (token.getType() == TokenType.COMMA);
         Node function;
         nextToken(TokenType.BRACKET_CLOSE, "Ожидася символ )");
@@ -279,7 +287,7 @@ public class Analysator {
             function = thisTree.findUp(tokenIn.getText()).node;
         }
         if (function != null && function.getTypeObject() == TypeObject.FUNCTION) {
-            if (function.getParameters().size() == parameters.size() && function.getParameters().containsAll(parameters))
+            if (function.getParameters().size() == parameters.size())
                 return thisTree.node;
             else {
                 printSemError("Ошибка входных типов входных параметров в функции " + tokenIn.getText());
@@ -299,7 +307,7 @@ public class Analysator {
             if (thisTree.findUpVar(tokenID.getText()) == null) {
                 printSemError("Переменная " + tokenID.getText() + " не найдена");
             } else {
-
+                // TODO:
             }
             Node node = expression1();
         }
@@ -352,7 +360,7 @@ public class Analysator {
 
     private void cases() {
         nextToken(TokenType.CASE, "Ожидался оператор case");
-        nextToken(TokenType.TYPE_INT, "Ожидалась целая константа");
+        nextToken(TokenType.TYPE_DEC, "Ожидалась целая константа");
         nextToken(TokenType.COLON, "Ожидался символ :");
         Token token = nextTokenRead();
         if (isCaseOper(token))
@@ -360,14 +368,15 @@ public class Analysator {
         else
             printError("Ожидались case-операторы");
 
+
     }
 
     private void caseOper() {
         Token token = nextTokenRead();
         while (token.getType() != TokenType.CASE && token.getType() != TokenType.CURLY_BRACKET_CLOSE  && token.getType() != TokenType.DEFAULT) {
-            if (isOperator(token))
+            if (isOperator(token)) {
                 operator();
-            else if (token.getType() == TokenType.BREAK) {
+            } else if (token.getType() == TokenType.BREAK) {
                 nextToken(TokenType.BREAK, "Ожидался оператор break");
                 nextToken(TokenType.SEMICOLON, "Ожидался символ ;");
             }
@@ -376,7 +385,7 @@ public class Analysator {
     }
 
     private boolean isCaseOper(Token token) {
-        return token.getType() == TokenType.BREAK || isOperator(token);
+        return token.getType() == TokenType.BREAK || isOperator(token) || token.getType() == TokenType.INT || token.getType() == TokenType.BOOL;
     }
 
     private boolean isDefault(Token token) {
@@ -408,7 +417,7 @@ public class Analysator {
     private boolean isElementaryExpresion(Token token) {
         return  token.getType() == TokenType.ID ||
                 token.getType() == TokenType.BRACKET_OPEN ||
-                token.getType() == TokenType.TYPE_INT ||
+                token.getType() == TokenType.TYPE_DEC ||
                 token.getType() == TokenType.TYPE_HEX ||
                 token.getType() == TokenType.FALSE ||
                 token.getType() == TokenType.TRUE;
@@ -531,24 +540,13 @@ public class Analysator {
 
     private Node expression7() {
         Token token = nextTokenRead();
-        TypeData isZnak = TypeData.INTEGER;
         while  (token.getType() == TokenType.PLUS || token.getType() == TokenType.MINUS || token.getType() == TokenType.NOT) {
-            if (token.getType() == TokenType.NOT) {
-                isZnak = TypeData.BOOL;
-            }
             nextToken();
             token = nextTokenRead();
         }
 
-        Node node = elementaryExpression();
-        if (isZnak == TypeData.INTEGER) {
-            node.typeData = TypeData.INTEGER;
-            return node;
-        }
-        else {
-            node.typeData = TypeData.BOOL;
-            return node;
-        }
+        return elementaryExpression();
+
     }
 
     private Node elementaryExpression() {
@@ -587,7 +585,7 @@ public class Analysator {
             nextToken(TokenType.BRACKET_CLOSE, "Ожидался символ )");
             return node;
         }
-        else if (token.getType() == TokenType.TYPE_INT) {
+        else if (token.getType() == TokenType.TYPE_DEC) {
             nextToken();
             return Node.createConst(TypeData.INTEGER);
         }

@@ -2,7 +2,7 @@ package lexer;
 
 public enum TokenType {
 
-    TYPE_INT,
+    TYPE_DEC,
     TYPE_HEX,
 
     TRUE,
