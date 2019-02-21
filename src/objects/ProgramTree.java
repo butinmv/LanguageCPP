@@ -49,6 +49,14 @@ public class ProgramTree {
         return i;
     }
 
+    public ProgramTree findUpVarLevel(String name) {
+        ProgramTree i = this.left;
+        while (i != this.right && !(name.equals(i.node.name) && i.node.typeObject == TypeObject.VAR)) {
+            i = i.up;
+        }
+        return i;
+    }
+
     public void print(int n) {
         for (int i = 0; i < n; i++)
             System.out.print("\t");

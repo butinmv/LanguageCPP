@@ -1,19 +1,49 @@
-
 bool a = true, b = false, c = 10 , d = -10;
 
 int gg(bool t) {
     return t;
 }
 
-bool gg1(int t) {
-     return t;
- }
+bool gg(int t) {
+{int t, h;}
+{int t, h;}
+{int t, h;}
+{int t, h;
+    {int t, h;
+        {int t, h;
+            {int t, h;
+                //t = count;
+                gg(5);
+            }
+            int count;
+        }
+    }
+
+}
+    int x;
+    return b;
+    switch (x + (4 * (3)) == ++++5) {
+        case 1:
+            break;
+
+        case 2:
+            c = gg(x);
+
+        default:
+        ;
+    }
+
+    int a = gg(9);
+}
+
+int k(int e) {
+}
 
 int main(int c) {
-    int x = gg(gg1(2));
+    main(3);
+    int x;
     switch (x) {
         case 1:
-            f = gg1(x);
             break;
 
         case 2:
@@ -22,7 +52,6 @@ int main(int c) {
         default:
             break;
     }
+    k(14);
 }
-
-
 

@@ -56,6 +56,12 @@ public class Analysator {
             Node node = addFunc(tokenID, typeData);
             ArrayList<TypeData> parameters = function();
             node.setParameters(parameters);
+
+            token = nextTokenRead();
+            if (isCompoundOperator(token))
+                compoundOperator();
+            else
+                printError("Ожидался символ {");
         }
         else if (isData(token)) {
             addVar(typeData, tokenID);
@@ -74,18 +80,13 @@ public class Analysator {
         this.parameters = true;
         nextToken(TokenType.BRACKET_OPEN, "Ожидался символ (");
         Token token;
-        ArrayList<TypeData> parameters = new ArrayList<>();
+        ArrayList<TypeData> parameters;
         do {
             parameters = formalParameters();
             token = nextTokenRead();
         } while (token.getType() != TokenType.BRACKET_CLOSE);
         nextToken(TokenType.BRACKET_CLOSE, "Ожидался символ )");
 
-        token = nextTokenRead();
-        if (isCompoundOperator(token))
-            compoundOperator();
-        else
-            printError("Ожидался символ {");
         return parameters;
     }
 
@@ -130,6 +131,11 @@ public class Analysator {
     private void addVar(TypeData typeData, Token token) {
         if (thisTree.findUpVar(token.getText()) != null && !parameters) {
             printSemError("Переменная " + token.getText() + " уже существует");
+            if (thisTree.findUpVarLevel(token.getText()) == null && !parameters) {
+                Node node = Node.createVar(token.getText(), typeData);
+                thisTree.setLeft(node);
+                thisTree = thisTree.left;
+            }
         }
         else {
             Node node = Node.createVar(token.getText(), typeData);
@@ -342,7 +348,6 @@ public class Analysator {
                 cases();
             else if (isDefault(token))
                 defaultOper();
-
             token = nextTokenRead();
         }
         nextToken(TokenType.CURLY_BRACKET_CLOSE, "Ожидался символ }");
@@ -385,7 +390,7 @@ public class Analysator {
     }
 
     private boolean isCaseOper(Token token) {
-        return token.getType() == TokenType.BREAK || isOperator(token) || token.getType() == TokenType.INT || token.getType() == TokenType.BOOL;
+        return token.getType() == TokenType.BREAK || isOperator(token);
     }
 
     private boolean isDefault(Token token) {
@@ -558,19 +563,24 @@ public class Analysator {
             nextToken();
             token = nextTokenRead();
 
-            // TODO!!!!
-            if (thisTree.findUpVar(tokenName.getText()) != null) {
-                if (!parameters) {
-                    return thisTree.node;
-                } else {
-                    printSemError("Переменная не была объявлена");
-                }
-            }
-
             if (token.getType() == TokenType.BRACKET_OPEN) {
                 nodeFunc = callFunction(tokenName);
                 return nodeFunc;
+            } else {
+                // TODO!!!!
+                if (thisTree.findUpVar(tokenName.getText()) != null) {
+                    if (!parameters) {
+                        return thisTree.node;
+                    } else {
+                        printSemError(tokenName.getText());
+                    }
+                } else {
+                    printSemError(tokenName.getText());
+                    return thisTree.node;
+                }
             }
+
+
         }
         else if (token.getType() == TokenType.BRACKET_OPEN) {
             nextToken();
@@ -636,3 +646,51 @@ public class Analysator {
         return isElementaryExpresion(token) || token.getType() == TokenType.PLUS || token.getType() == TokenType.MINUS || token.getType() == TokenType.NOT;
     }
 }
+/*
+
+bool a = true, b = false, c = 10 , d = -10;
+
+int gg(bool t) {
+    return t;
+}
+
+bool gg(int t) {
+{int t, h;}
+{int t, h;}
+{int t, h;}
+{int t, h;}
+    int x;
+    return b;
+    switch (x) {
+        case 1:
+            break;
+
+        case 2:
+            c = gg(x);
+
+        default:
+        ;
+    }
+
+    int a = gg(9);
+}
+
+int main(int c) {
+    main(3);
+    int x;
+    switch (x) {
+        case 1:
+            break;
+
+        case 2:
+            c = gg(x);
+
+        default:
+            break;
+    }
+}
+
+
+
+
+ */
